@@ -4,6 +4,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -63,24 +64,59 @@ public class MainActivity extends AppCompatActivity {
 
         DLG.setMessage("Introduzca la tarea");
         DLG.setView(ed_tarea);
-        DLG.setNegativeButton("cancelar",null);
+        DLG.setNegativeButton("cancelar", null);
         DLG.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String tarea = ed_tarea.getText().toString();
                 adapatador.add(tarea);
-                //adapatador.remove(adapatador.getItem(pos));
             }
         });
 
         DLG.create().show();
     }
 
-    private void elemina(int pos){
+    private void elemina(int pos) {
         this.tareas.remove(pos);
         this.adapatador.notifyDataSetChanged();
     }
 
     private ArrayList<String> tareas;
     private ArrayAdapter<String> adapatador;
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        final SharedPreferences pref = this.getPreferences(MODE_PRIVATE);
+        final SharedPreferences.Editor prefEditor = pref.edit();
+        StringBuilder str_tareas = new StringBuilder();
+
+        for (int i = 0; i < tareas.size(); i++) {
+            str_tareas.append(tareas.get(i));
+            str_tareas.append(" ");
+        }
+
+        prefEditor.putString("tareas", str_tareas.toString());
+        prefEditor.apply();
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (!tareas.isEmpty()) {
+            tareas.removeAll(tareas);
+            adapatador.notifyDataSetChanged();
+            
+            final SharedPreferences pref = this.getPreferences(MODE_PRIVATE);
+            final String str_tareas = pref.getString("tareas", "");
+            final String[] array_tareas = str_tareas.split(" ");
+
+            for (String tarea : array_tareas) {
+                adapatador.add(tarea);
+            }
+        }
+    }
 }
