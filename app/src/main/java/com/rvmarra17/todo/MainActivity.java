@@ -106,17 +106,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (!tareas.isEmpty()) {
-            tareas.removeAll(tareas);
-            adapatador.notifyDataSetChanged();
-            
-            final SharedPreferences pref = this.getPreferences(MODE_PRIVATE);
-            final String str_tareas = pref.getString("tareas", "");
-            final String[] array_tareas = str_tareas.split(" ");
+        tareas.removeAll(tareas);
+        adapatador.notifyDataSetChanged();
+        
+        final SharedPreferences pref = this.getPreferences(MODE_PRIVATE);
+        final String str_tareas = pref.getString("tareas", "");
+        final String[] array_tareas = str_tareas.split(" ");
 
-            for (String tarea : array_tareas) {
-                adapatador.add(tarea);
-            }
+        for (String tarea : array_tareas) {
+            adapatador.add(tarea);
         }
+        
     }
 }
