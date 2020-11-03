@@ -24,7 +24,6 @@ public class Adaptador extends ArrayAdapter {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        //super.getView(position, convertView, parent);
 
         final Context contexto = this.getContext();
         final LayoutInflater inflador = LayoutInflater.from(contexto);
@@ -38,7 +37,7 @@ public class Adaptador extends ArrayAdapter {
         final TextView ED_FECHA = convertView.findViewById(R.id.fecha);
 
         ED_TAREA.setText(tarea.getTarea());
-        ED_FECHA.setText(tarea.getFechaFormat());
+        ED_FECHA.setText(tarea.getFechaAsString());
 
         return convertView;
     }

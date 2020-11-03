@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.rvmarra17.todo.R;
 import com.rvmarra17.todo.core.Adaptador;
@@ -20,7 +21,9 @@ import com.rvmarra17.todo.core.Item;
 
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
@@ -85,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                 DLG_fecha.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        adapatador.add(new Item(tarea, buildDate(ed_fecha.getDayOfMonth(), ed_fecha.getDayOfMonth(), ed_fecha.getMonth())));
+                        adapatador.add(new Item(tarea, buildDate(ed_fecha.getDayOfMonth(), ed_fecha.getMonth(), ed_fecha.getYear())));
                     }
                 });
                 DLG_fecha.create().show();
@@ -96,9 +99,13 @@ public class MainActivity extends AppCompatActivity {
         DLG_tarea.create().show();
     }
 
-    private Date buildDate(int dia, int mes, int anho) {
-        return new Date(anho + 108, mes - 1, dia);
-        //return new Date(anho,mes,dia);
+    private Calendar buildDate(int dia, int mes, int anho) {
+        Calendar fecha = Calendar.getInstance();
+        fecha.set(Calendar.DAY_OF_MONTH, dia);
+        fecha.set(Calendar.MONTH, mes);
+        fecha.set(Calendar.YEAR, anho);
+
+        return fecha;
     }
 
     private void elemina(int pos) {
@@ -108,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayList<Item> tareas;
     private Adaptador adapatador;
+
 
     @Override
     protected void onPause() {
@@ -119,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
 
         for (int i = 0; i < tareas.size(); i++) {
             str_tareas.append(tareas.get(i).toString());
-            str_tareas.append(" ");
+            str_tareas.append("|");
         }
 
         prefEditor.putString("tareas", str_tareas.toString());
@@ -131,31 +139,47 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        tareas.removeAll(tareas);
+        adapatador.notifyDataSetChanged();
+
         final SharedPreferences pref = this.getPreferences(MODE_PRIVATE);
         final String str_tareas = pref.getString("tareas", "");
-        final String[] array_tareas = str_tareas.split(" ");
+        final String[] array_tareas = str_tareas.split("\\|");
 
-        if (array_tareas.length == 1 && array_tareas[0].equals(" ")) {
-            tareas.removeAll(tareas);
-            adapatador.notifyDataSetChanged();
-        } else {
-            /*for (String tarea : array_tareas) {
-                String[] aux = tarea.split(" ");
-                try {
-                    adapatador.add(new Item(aux[0], aux[1]));
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }*/
-
-            for (int i = 0; i< array_tareas.length;i=+2){
-                try {
-                    adapatador.add(new Item(array_tareas[0], array_tareas[1]));
-                } catch (ParseException e) {
-                    e.printStackTrace();
+        if (array_tareas.length != 1 || !array_tareas[0].equals("")) {
+            if (array_tareas.length != 0) {
+                for (int i = 0; i < array_tareas.length; i+=2) {
+                    try {
+                        //añado las tareas
+                        Item aux = new Item(array_tareas[i], array_tareas[i + 1]);
+                        adapatador.add(aux);
+                        //comprobación del calendario
+                       // comprobarCalendario(array_tareas[i+1]);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
 
 
+
+
     }
+
+    private void comprobarCalendario(String calendario) throws ParseException {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        Date date = sdf.parse(calendario);
+        Calendar calendarioTarea = Calendar.getInstance();
+        calendarioTarea.setTime(date);
+
+        Calendar calendarioActual = Calendar.getInstance();
+
+        if((calendarioTarea.get(Calendar.DAY_OF_MONTH) == calendarioActual.get(Calendar.DAY_OF_MONTH)) && (calendarioTarea.get(Calendar.MONTH) == calendarioActual.get(Calendar.MONTH)) && (calendarioTarea.get(Calendar.YEAR) == calendarioActual.get(Calendar.YEAR))){
+            Toast.makeText(this,"Tienes una tarea pendiente",Toast.LENGTH_LONG);
+        }
+
+    }
+
 }

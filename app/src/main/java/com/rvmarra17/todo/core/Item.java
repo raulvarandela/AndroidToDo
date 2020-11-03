@@ -2,21 +2,25 @@ package com.rvmarra17.todo.core;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class Item {
 
     private String tarea;
-    private Date fecha; //usar mejor calendar
+    private Calendar fecha; //usar mejor calendar
 
-    public Item(String tarea, Date fecha) {
+    public Item(String tarea, Calendar fecha) {
         this.tarea = tarea;
         this.fecha = fecha;
     }
 
     public Item(String tarea, String fecha) throws ParseException {
         this.tarea = tarea;
-        this.fecha = new SimpleDateFormat("dd/MM/yyyy").parse(fecha);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        Date date = sdf.parse(fecha);
+        this.fecha = Calendar.getInstance();
+        this.fecha.setTime(date);
     }
 
     public String getTarea() {
@@ -27,34 +31,32 @@ public class Item {
         this.tarea = tarea;
     }
 
-    public Date getFecha() {
+    public Calendar getFecha() {
         return fecha;
     }
 
-    public void setFecha(Date fecha) {
+    public  String getFechaAsString(){
+        StringBuilder toret = new StringBuilder();
+        toret.append(fecha.get(Calendar.DAY_OF_MONTH));
+        toret.append("/");
+        toret.append(fecha.get(Calendar.MONTH)+1);
+        toret.append("/");
+        toret.append(fecha.get(Calendar.YEAR));
+
+        return toret.toString();
+    }
+
+    public void setFecha(Calendar fecha) {
         this.fecha = fecha;
     }
 
     @Override
     public String toString() {
         StringBuilder toret = new StringBuilder();
-        toret.append(tarea);
-        toret.append(" ");
-        toret.append(this.getFechaFormat());
+        toret.append(this.tarea);
+        toret.append("|");
+        toret.append(this.getFechaAsString());
 
-        return  toret.toString();
-    }
-
-    public String getFechaFormat(){
-        StringBuilder toret = new StringBuilder();
-        toret.append(Integer.toString(fecha.getDate()));
-        toret.append("/");
-        toret.append(Integer.toString(fecha.getMonth()+1));
-        toret.append("/");
-        toret.append(Integer.toString(fecha.getYear()+1900));
-
-
-        return  toret.toString();
-
+        return toret.toString();
     }
 }
