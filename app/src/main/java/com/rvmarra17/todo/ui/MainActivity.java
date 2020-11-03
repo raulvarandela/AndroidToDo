@@ -216,7 +216,11 @@ public class MainActivity extends AppCompatActivity {
                         Item aux = new Item(array_tareas[i], array_tareas[i + 1]);
                         adapatador.add(aux);
                         //comprobación del calendario
-                       // comprobarCalendario(array_tareas[i+1]);
+                       if(comprobarCalendario(array_tareas[i+1])){
+                           final AlertDialog.Builder dlg = new AlertDialog.Builder(this);
+                           dlg.setMessage("Tines la tarea "+ array_tareas[i] +" pendiente.");
+                           dlg.setPositiveButton("Ok!", null);
+                       }
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
@@ -229,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void comprobarCalendario(String calendario) throws ParseException {
+    private Boolean comprobarCalendario(String calendario) throws ParseException {
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         Date date = sdf.parse(calendario);
@@ -238,10 +242,7 @@ public class MainActivity extends AppCompatActivity {
 
         Calendar calendarioActual = Calendar.getInstance();
 
-        if((calendarioTarea.get(Calendar.DAY_OF_MONTH) == calendarioActual.get(Calendar.DAY_OF_MONTH)) && (calendarioTarea.get(Calendar.MONTH) == calendarioActual.get(Calendar.MONTH)) && (calendarioTarea.get(Calendar.YEAR) == calendarioActual.get(Calendar.YEAR))){
-            Toast.makeText(this,"Tienes una tarea pendiente",Toast.LENGTH_LONG);
-        }
-
+        return calendarioActual.equals(calendarioTarea);
     }
 
 }
