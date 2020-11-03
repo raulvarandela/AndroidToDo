@@ -1,11 +1,14 @@
 package com.rvmarra17.todo.ui;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -52,10 +55,11 @@ public class MainActivity extends AppCompatActivity {
 
         tareas.setAdapter(adapatador);
 
+        this.registerForContextMenu(tareas);
         tareas.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                elemina(position);
+                posicion = position;
                 return false;
             }
         });
@@ -65,13 +69,71 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+
+        if (v.getId()==R.id.tareas){
+            this.getMenuInflater().inflate(R.menu.menu_contextual,menu);
+        }
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        super.onContextItemSelected(item);
+
+        switch (item.getItemId()){
+            case R.id.eliminar:
+                this.elemina(posicion);
+                break;
+            case R.id.modificar:
+                this.modifica(posicion);
+                break;
+        }
+        return true;
+    }
+
+    private void modifica(final int posicion) {
+        final AlertDialog.Builder DLG_tarea = new AlertDialog.Builder(this);
+        final AlertDialog.Builder DLG_fecha = new AlertDialog.Builder(this);
+        final EditText ed_tarea = new EditText(this);
+        final DatePicker ed_fecha = new DatePicker(this);
+        ed_tarea.setText(tareas.get(posicion).getTarea());
+
+        DLG_tarea.setMessage("Introduzca la tarea");
+        DLG_tarea.setView(ed_tarea);
+        DLG_tarea.setNegativeButton("cancelar", null);
+        DLG_tarea.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                final String tarea = ed_tarea.getText().toString();
+
+                //mostrar el segundo dialogo
+                DLG_fecha.setMessage("Introduce la fecha");
+                DLG_fecha.setView(ed_fecha);
+                DLG_fecha.setNegativeButton("cancelar", null);
+                DLG_fecha.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        tareas.remove(posicion);
+                        tareas.add(posicion,new Item(tarea, buildDate(ed_fecha.getDayOfMonth(), ed_fecha.getMonth(), ed_fecha.getYear())));
+                        adapatador.notifyDataSetChanged();
+                    }
+                });
+                DLG_fecha.create().show();
+
+            }
+        });
+
+        DLG_tarea.create().show();
+    }
+
     private void inserta() {
         final AlertDialog.Builder DLG_tarea = new AlertDialog.Builder(this);
         final AlertDialog.Builder DLG_fecha = new AlertDialog.Builder(this);
         final EditText ed_tarea = new EditText(this);
         final DatePicker ed_fecha = new DatePicker(this);
-        final String[] tempTarea = new String[1];
-        final Date[] tempDate;
+
 
         DLG_tarea.setMessage("Introduzca la tarea");
         DLG_tarea.setView(ed_tarea);
@@ -115,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayList<Item> tareas;
     private Adaptador adapatador;
-
+    int posicion;
 
     @Override
     protected void onPause() {
